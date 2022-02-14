@@ -13,9 +13,9 @@ class AuthController extends Controller
      *
      * @return void
      */
-    public function __construct(){
-        $this->middleware('auth:api', ['except' => ['login']]);
-    }
+    // public function __construct(){
+    //     $this->middleware('auth:api', ['except' => ['login']]);
+    // }
 
     /**
      * Get a JWT via given credentials.
@@ -26,7 +26,7 @@ class AuthController extends Controller
     {
         $credentials = request(['email', 'password']);
 
-        if (! $token = auth()->attempt($credentials)) {
+        if (! $token = auth('api')->attempt($credentials)) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
@@ -39,7 +39,7 @@ class AuthController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function me(){
-        return response()->json(auth()->user());
+        return response()->json(auth('api')->user());
     }
 
     /**
@@ -48,7 +48,7 @@ class AuthController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function logout(){
-        auth()->logout();
+        auth('api')->logout();
 
         return response()->json(['message' => 'Successfully logged out']);
     }
@@ -59,7 +59,7 @@ class AuthController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function refresh(){
-        return $this->respondWithToken(auth()->refresh());
+        return $this->respondWithToken(auth('api')->refresh());
     }
 
     /**
@@ -73,7 +73,7 @@ class AuthController extends Controller
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 60
+            'expires_in' => auth('api')->factory()->getTTL() * 60
         ]);
     }
 }
