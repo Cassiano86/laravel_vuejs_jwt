@@ -62,8 +62,8 @@
         //Criando o data em forma de objeto literal
         data() {
             return {
-                email    : '',
-                password : '',
+                email    : 'cassiano_tst@hotmail.com',
+                password : 'senha123',
             }
         },
 

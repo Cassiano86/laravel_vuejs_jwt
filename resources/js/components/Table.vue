@@ -1,0 +1,39 @@
+<template>
+    <table class="table table-hover table-striped">
+        <thead class='table-dark'>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">First - component</th>
+                <th scope="col">Last - component</th>
+                <th scope="col">Handle - component</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th scope="row">1</th>
+                <td>Mark</td>
+                <td>Otto</td>
+                <td>@mdo</td>
+            </tr>
+            <tr>
+                <th scope="row">2</th>
+                <td>Jacob</td>
+                <td>Thornton</td>
+                <td>@fat</td>
+            </tr>
+            <tr>
+                <th scope="row">3</th>
+                <td colspan="2">Larry the Bird</td>
+                <td>@twitter</td>
+            </tr>
+        </tbody>
+    </table>          
+</template>
+
+<script>
+    export default{
+        mounted() {
+            console.log('Chegou no mounted da component-table');
+        }
+    }
+</script>
