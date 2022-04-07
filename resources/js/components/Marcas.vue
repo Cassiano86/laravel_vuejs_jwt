@@ -9,20 +9,20 @@
                             <div class="row">
                                 <div class="col mb-3">
                                     <input-container-component  Id="inputId" titulo="ID" id-help="IdHelp" texto-ajuda="Opcional. Informe o Id da marca">
-                                        <input type="number" min='0' class="form-control" id="inputId"  aria-describedby="IdHelp">
+                                        <input type="number" min='0' class="form-control" id="inputId"  aria-describedby="IdHelp" v-model="campoBusca.id">
                                     </input-container-component>
                                 </div>
                                     
                                 <div class="col mb-3">
                                     <input-container-component  Id="inputNome" titulo="Marca" id-help="IdNome" texto-ajuda="Informe a marca">
-                                        <input type="text" class="form-control" id="inputNome" aria-describedby="IdNome">
+                                        <input type="text" class="form-control" id="inputNome" aria-describedby="IdNome" v-model="campoBusca.nome">
                                     </input-container-component>
                                 </div>
                             </div>
                         </template>
 
                         <template v-slot:rodape>
-                            <button type="submit" class="btn btn-primary btn-sm float-right">Pesquisar</button>
+                            <button type="submit" class="btn btn-primary btn-sm float-right" @click="buscarMarcas()">Pesquisar</button>
                         </template>
                     </card-component>
                 <!-- Fim do card de buscas -->
@@ -30,11 +30,35 @@
                 <!-- inicio do card de listagens -->
                     <card-component Titulo="Relação de  Marcas">
                         <template v-slot:Conteudo>
-                            <table-component></table-component>
+                            <!-- listaMarcas.data está sendo passado por paginação, caso não fosse
+                            feita a paginação bastaria retirar o .data -->
+                            <table-component 
+                                :marcasRegistradas="listaMarcas.data" 
+                                :titulos="{
+                                    id      : {titulo : 'Registro',     tipo : 'texto'},
+                                    nome    : {titulo : 'Nome',   tipo : 'texto'},
+                                    imagem  : {titulo : 'Imagem', tipo : 'imagem'},
+                                }"
+                            >
+                            </table-component>
                         </template>
 
                         <template v-slot:rodape>
-                            <button type="button" class="btn btn-primary btn-sm float-right" data-toggle="modal" data-target="#modalMarcas">Adicionar</button>
+                            <div class="row">
+                                <div class="col-10">
+                                    <pagination-component>
+                                        <template v-slot:pagination_slot>
+                                            <li v-for="valor, key in listaMarcas.links" :key="key" :class="valor.active ? 'page-item active' : 'page-item'" @click="paginacao(valor.url)">
+                                                <a class="page-link" v-html="valor.label" style="cursor:pointer;"></a>
+                                            </li>
+                                        </template>
+                                    </pagination-component>
+                                </div>
+
+                                <div class="col-2">
+                                    <button type="button" class="btn btn-primary btn-sm float-right" data-toggle="modal" data-target="#modalMarcas">Adicionar</button>
+                                </div>
+                            </div>
                         </template>
                     </card-component>
                 <!-- Fim do card de listagens -->
@@ -42,8 +66,8 @@
                 <!-- Componente modal -->
                     <modal-component id="modalMarcas" titulo="Cadastro de marcas">
                         <template v-slot:alerts>
-                            <alert-component tipo="success" :mensagemRetorno="mensagemRetorno" :titulo="situacaoCadastro" v-if="situacaoCadastro == 'Sucesso'"></alert-component>
-                            <alert-component tipo="danger"  :mensagemRetorno="mensagemRetorno" :titulo="situacaoCadastro" v-if="situacaoCadastro == 'Erro'"></alert-component>
+                            <alert-component tipo="success" :mensagemRetorno="mensagemRetorno" :situacao="situacaoCadastro" titulo="Cadastro realizado com sucesso" v-if="situacaoCadastro == 'Sucesso'"></alert-component>
+                            <alert-component tipo="danger"  :mensagemRetorno="mensagemRetorno" :situacao="situacaoCadastro" titulo="Erro ao cadastrar nova marca" v-if="situacaoCadastro == 'Erro'"></alert-component>
                         </template>
 
                         <template v-slot:conteudo>
@@ -80,16 +104,65 @@
         data() {
             return {
                 urlBase: "http://localhost:8000/api/v1/marca",
+                urlPagination : '',
+                urlBusca: '',
                 nomeMarca : '',
                 arquivosImagem : [], //Podendo receber mais de um arquivo
                 situacaoCadastro : '',
-                mensagemRetorno: []
+                mensagemRetorno: {},
+                campoBusca : {id : '', nome : ''},
+                listaMarcas: { data: [] }, //Esse objeto está sendo passado com um array vazio, dessa forma quando for utilizado em um map, um warning não será apresentado pois o objeto deixa de ser undefined
             }
         },
 
         methods:{
+            buscarMarcas(){
+                let dados = '';
+
+                if(this.campoBusca){
+
+                    //Percorrendo as chaves do campoBusca através de um for
+                    for(let chave in this.campoBusca){
+                        
+                        //Necessário apresentar ; entre uma chave e outra
+                        if(dados != null){
+                            dados += ";";
+                        }
+
+                        dados += chave + ":"+ this.campoBusca[chave];
+                    }
+
+                    console.log(dados);
+                }
+            },
+
+            paginacao(e){
+                if(e){
+                    this.urlBase = e; //Ajustando o link base para a paginação
+                    this.index() //Chamando o index com o link atualizado para a paginação
+                }
+            },
+
             carregarImagem(e){
                 this.arquivosImagem = e.target.files //Forma de recuperar arquivos com o Vuejs
+            },
+
+            index(){
+                let config= {
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'Authorization': this.token
+                                }
+                            };
+
+                axios.get(this.urlBase, config)
+                    .then(response => {
+                        this.listaMarcas = response.data
+                        //console.log(this.listaMarcas)
+                    })
+                    .catch(errors => {
+                        console.log(errors)
+                    });
             },
 
             salvar(){
@@ -111,16 +184,20 @@
                 axios.post(this.urlBase, formData, config)
                      .then(response => {
                          this.situacaoCadastro = 'Sucesso';
-                         this.mensagemRetorno = response;
-                         console.log(response);
+                         this.mensagemRetorno = {mensagem : "Marca "+ response.data.nome +" registrada com sucesso!"};
+                         console.log(response.data);
                      })
                      .catch(errors => {
                          this.situacaoCadastro = 'Erro';
-                         this.mensagemRetorno = errors;
+                         this.mensagemRetorno = {mensagem : errors.message};
                          console.log(errors);
                      });
                 
             }
+        },
+
+        mounted(){
+            this.index();
         }
     }
 </script>

@@ -2,13 +2,13 @@
     <div :class="estilo" role="alert">
         {{titulo}}
         <hr>
-        {{ mensagemRetorno }}
+        <p>{{mensagemRetorno.mensagem}}</p>
     </div>
 </template>
 
 <script>
     export default {
-        props: ['tipo', 'titulo', 'mensagemRetorno'],
+        props: ['tipo', 'titulo', 'mensagemRetorno', 'situacao'],
 
         computed: {
             estilo(){

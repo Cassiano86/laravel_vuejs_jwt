@@ -1,6 +1,6 @@
 <template>
     <!-- Modal -->
-    <div class="modal fade" :id="id" tabindex="-1" :aria-labelledby="id" aria-hidden="true">
+    <div class="modal fade" :id="id" tabindex="-1" :aria-labelledby="id" aria-hidden="true" data-backdrop="static">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -11,7 +11,7 @@
             </div>
             <div class="modal-body">
                 <slot name="alerts"></slot>
-
+                
                 <slot name="conteudo"></slot>
             </div>
             <div class="modal-footer">
@@ -24,7 +24,10 @@
 
 <script>
     export default {
-       props: ['id', 'titulo']
+       props: ['id', 'titulo'],
+
+       methods: {
+       }
     }
 </script>
 <!-- Button trigger modal 

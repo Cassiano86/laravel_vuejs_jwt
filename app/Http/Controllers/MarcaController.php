@@ -18,7 +18,8 @@ class MarcaController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(){
-        return view('app.marcas');
+        $marca = $this->marca->paginate(5);
+        return response()->json($marca, 201);
     }
 
     /**

@@ -21,6 +21,6 @@ Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
-Route::group(['middleware' => 'auth', 'prefix' => 'marcas'], function(){
-    Route::get('/', ['as' => 'Marcas', 'uses' => 'App\Http\Controllers\MarcaController@index']);
-});
+Route::get('/marcas', function() {
+    return view('app.marcas');
+})->name('marcas')->middleware('auth');
