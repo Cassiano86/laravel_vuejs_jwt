@@ -48,7 +48,7 @@
                                 <div class="col-10">
                                     <pagination-component>
                                         <template v-slot:pagination_slot>
-                                            <li v-for="valor, key in listaMarcas.links" :key="key" :class="valor.active ? 'page-item active' : 'page-item'" @click="paginacao(valor.url)">
+                                            <li v-for="valor, key in listaMarcas.links" :key="key" :class="valor.active ? 'page-item active' : 'page-item'" @click="paginacao(valor)">
                                                 <a class="page-link" v-html="valor.label" style="cursor:pointer;"></a>
                                             </li>
                                         </template>
@@ -125,20 +125,30 @@
                     for(let chave in this.campoBusca){
                         
                         //Necessário apresentar ; entre uma chave e outra
-                        if(dados != null){
+                        if(dados != ""){
                             dados += ";";
                         }
 
                         dados += chave + ":"+ this.campoBusca[chave];
                     }
 
-                    console.log(dados);
+                    if(dados != ""){
+                        this.urlPagination = "page=1"; //Para manter sempre o indice atualizado a cada nova consulta
+                        this.urlBusca = "&filtro="+dados;
+                    }else{
+                        //Caso não haja nenhum valor, porque senão o valor acima será passado como parâmetro
+                        this.urlBusca = "";
+                    }
+
+                    this.index();
                 }
             },
 
             paginacao(e){
-                if(e){
-                    this.urlBase = e; //Ajustando o link base para a paginação
+                if(e.url){
+                    //this.urlBase = e; //Ajustando o link base para a paginação
+
+                    this.urlPagination = e.url.split("?")[1]; //pegando somente o indice da paginação de uma url
                     this.index() //Chamando o index com o link atualizado para a paginação
                 }
             },
@@ -148,6 +158,8 @@
             },
 
             index(){
+                let url = this.urlBase+"?"+this.urlPagination+this.urlBusca;
+                console.log(url);
                 let config= {
                                 headers: {
                                     'Accept': 'application/json',
@@ -155,10 +167,10 @@
                                 }
                             };
 
-                axios.get(this.urlBase, config)
+                axios.get(url, config)
                     .then(response => {
                         this.listaMarcas = response.data
-                        //console.log(this.listaMarcas)
+                        console.log(this.listaMarcas)
                     })
                     .catch(errors => {
                         console.log(errors)

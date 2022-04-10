@@ -17,8 +17,22 @@ class MarcaController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(){
-        $marca = $this->marca->paginate(5);
+    public function index(Request $request){
+        if(isset($request->filtro)){
+            $marca = new Marca();
+
+            $campoBusca = explode(';', $request->filtro);
+            
+            foreach($campoBusca as $key => $value) {
+
+                $c = explode(':', $value);
+                $marca = $this->model = $this->marca->where($c[0], "like", "%".$c[1]."%")->paginate(5);
+            }
+            
+        }else{
+            $marca = $this->marca->paginate(5);
+        }
+        
         return response()->json($marca, 201);
     }
 
@@ -59,6 +73,7 @@ class MarcaController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id){
+        return response()->json($id, 201);
     }
 
     /**
