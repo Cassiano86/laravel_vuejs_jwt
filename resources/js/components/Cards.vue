@@ -17,7 +17,7 @@
     export default {
         props : ["Titulo"],
         mounted() {
-            console.log('Component card.')
+            //console.log('Component card.')
         }
     }
 </script>
