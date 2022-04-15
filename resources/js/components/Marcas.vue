@@ -2,7 +2,6 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-8">
-
                 <!-- inicio do card de buscas -->
                     <card-component Titulo="Busca de  Marcas">
                         <template v-slot:Conteudo>
@@ -33,7 +32,22 @@
                             <!-- listaMarcas.data está sendo passado por paginação, caso não fosse
                             feita a paginação bastaria retirar o .data -->
                             <table-component 
-                                :marcasRegistradas="listaMarcas.data" 
+                                :marcasRegistradas="listaMarcas.data"
+                                
+                                :visualizar="{
+                                                exibir      : true, 
+                                                dataToggle  : 'modal', 
+                                                dataTarget  : '#modalMarcaVisualizar'
+                                            }"
+
+                                :atualizar="true"
+
+                                :deletar="{ 
+                                            exibir : true,
+                                            dataToggle : 'modal',
+                                            dataTarget : '#modalMarcaDeletar'
+                                          }"
+
                                 :titulos="{
                                     id      : {titulo : 'Registro',     tipo : 'texto'},
                                     nome    : {titulo : 'Nome',   tipo : 'texto'},
@@ -63,7 +77,7 @@
                     </card-component>
                 <!-- Fim do card de listagens -->
 
-                <!-- Componente modal -->
+                <!-- Componente modal para adicionar marcas -->
                     <modal-component id="modalMarcas" titulo="Cadastro de marcas">
                         <template v-slot:alerts>
                             <alert-component tipo="success" :mensagemRetorno="mensagemRetorno" :situacao="situacaoCadastro" titulo="Cadastro realizado com sucesso" v-if="situacaoCadastro == 'Sucesso'"></alert-component>
@@ -72,7 +86,7 @@
 
                         <template v-slot:conteudo>
                             <input-container-component titulo="Nome da marca" Id="novoNome" textoAjuda="Informe o nome da marca" idHelp="novoNomeHelp">
-                                <input type="text" name="novoNome" id="novoNome" class="form-control" aria-describedby="novoNomeHelp" placeholder="Nome da marca" v-model="nomeMarca">
+                                <input  type="text" name="novoNome" id="novoNome" class="form-control" aria-describedby="novoNomeHelp" placeholder="Nome da marca" v-model="nomeMarca">
                             </input-container-component>
 
                             <input-container-component titulo="Logo da marca" Id="novaImagem" textoAjuda="Somente imagens no formato PNG" idHelp="novaImagemHelp">
@@ -87,6 +101,55 @@
                     </modal-component>
                 <!-- Componente modal -->
 
+                <!-- Modal de visualização de marcas -->
+                    <modal-component id="modalMarcaVisualizar" titulo="Registro de marca">
+                        <template v-slot:alerts>
+                        </template>
+
+                        <template v-slot:conteudo>
+                            <input-container-component titulo="Id" Id="idMarca" textoAjuda="Registro da marca" idHelp="MarcaId">
+                                <input v-if="$store.state.item.id" type="text" name="idMarca" id='idMarca' class='form-control' :value="$store.state.item.id" aria-describedby="MarcaId" placeholder="Registro da marca"  disabled/>
+                            </input-container-component>
+
+                            <input-container-component  Id='nomeMarca' titulo="Nome" textoAjuda="Nome da marca" idHelp="MarcaNome">
+                                <input v-if="$store.state.item.nome" type="text" id='nomeMarca' name='nomeMarca' class='form-control' :value="$store.state.item.nome" aria-describedby="MarcaNome" placeholder="Nome da marca" disabled />
+                            </input-container-component>
+
+                            <input-container-component Id='imagem' titulo="Imagem" textoAjuda="Logotipo" idHelp="Marcaimagem">
+                                <img v-if="$store.state.item.imagem" :src="'storage/'+$store.state.item.imagem" class='img-fluid d-block mx-auto w-50'/>
+                            </input-container-component>
+                        </template>
+
+                        <template v-slot:rodape>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </template>
+                    </modal-component>
+                <!-- Modal de visualização de marcas -->
+
+                <!-- Modal de remoção de marcas -->
+                    <modal-component id="modalMarcaDeletar" titulo="Deletar de marca">
+                        <template v-slot:alerts>
+                            <alert-component v-if="$store.state.transacao.status == 'sucesso'" estilo="success" tipo="success" titulo="Sucesso" :mensagemRetorno="$store.state.transacao"></alert-component>
+
+                            <alert-component v-if="$store.state.transacao.status == 'erro'" tipo="danger" estilo="danger" titulo="Erro ao excluir marca" :mensagemRetorno="$store.state.transacao"></alert-component>
+                        </template>
+
+                        <template v-slot:conteudo v-if="$store.state.transacao.status != 'sucesso'">
+                            <input-container-component titulo="Id" Id="idMarca" textoAjuda="Registro da marca" idHelp="MarcaId">
+                                <input v-if="$store.state.item.id" type="text" name="idMarca" id='idMarca' class='form-control' :value="$store.state.item.id" aria-describedby="MarcaId" placeholder="Registro da marca"  disabled/>
+                            </input-container-component>
+
+                            <input-container-component  Id='nomeMarca' titulo="Nome" textoAjuda="Nome da marca" idHelp="MarcaNome">
+                                <input v-if="$store.state.item.nome" type="text" id='nomeMarca' name='nomeMarca' class='form-control' :value="$store.state.item.nome" aria-describedby="MarcaNome" placeholder="Nome da marca" disabled />
+                            </input-container-component>
+                        </template>
+
+                        <template v-slot:rodape>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-danger" @click="deletar()" v-if="$store.state.transacao.status != 'sucesso'">Remover</button>
+                        </template>
+                    </modal-component>
+                <!-- Modal de remoção de marcas -->
             </div>
         </div>
     </div>
@@ -159,7 +222,7 @@
 
             index(){
                 let url = this.urlBase+"?"+this.urlPagination+this.urlBusca;
-                console.log(url);
+                //console.log(url);
                 let config= {
                                 headers: {
                                     'Accept': 'application/json',
@@ -170,10 +233,10 @@
                 axios.get(url, config)
                     .then(response => {
                         this.listaMarcas = response.data
-                        console.log(this.listaMarcas)
+                        //console.log(this.listaMarcas)
                     })
                     .catch(errors => {
-                        console.log(errors)
+                        //console.log(errors)
                     });
             },
 
@@ -197,12 +260,46 @@
                      .then(response => {
                          this.situacaoCadastro = 'Sucesso';
                          this.mensagemRetorno = {mensagem : "Marca "+ response.data.nome +" registrada com sucesso!"};
-                         console.log(response.data);
+                         //console.log(response.data);
                      })
                      .catch(errors => {
                          this.situacaoCadastro = 'Erro';
                          this.mensagemRetorno = {mensagem : errors.message};
-                         console.log(errors);
+                         //console.log(errors);
+                     });
+                
+            },
+
+            deletar(){
+                let confirmacao = confirm("Tem certeza que deseja deletar a marca: "+ this.$store.state.item.nome+"?");
+
+                if(!confirmacao){
+                    return false;
+                }
+
+                let url = this.urlBase+"/"+this.$store.state.item.id;
+
+                let formData = new FormData();
+                formData.append("_method", "delete");
+
+                let config = {
+                    headers : {
+                        "Content-Type" : "application/json",
+                        "Accept"       : "application/json",
+                        "Authorization": this.token
+                    }
+                }
+
+                axios.post(url, formData, config)
+                     .then(response => {
+                         console.log(response);
+                         this.$store.state.transacao.status = 'sucesso';
+                         this.$store.state.transacao.mensagem = response.data.msg;
+                         this.buscarMarcas();
+                     })
+                     .catch(errors => {
+                         this.$store.state.transacao.status = 'erro';
+                         this.$store.state.transacao.mensagem = errors.response.data.error;
                      });
                 
             }

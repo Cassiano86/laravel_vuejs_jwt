@@ -5,10 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Marca;
 use Illuminate\Http\Request;
+use Exception;
 
 class MarcaController extends Controller
 {
-    public function __construct(Marca $marca) {
+    public function __construct(Marca $marca){
         $this->marca = $marca;
     }
 
@@ -51,8 +52,7 @@ class MarcaController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
-    {
+    public function store(Request $request){
         $request->validate($this->marca->rules(), $this->marca->feedback());
         
         $imagem = $request->file('imagem');
@@ -103,5 +103,19 @@ class MarcaController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function destroy($id){
+        try{
+            $marca = Marca::where('id', $id)->first();
+            
+            if(empty($marca)){
+                throw new Exception("Marca não encontrada");
+            }
+
+            Storage::disk('public')->delete($marca->imagem);
+            $marca->delete();
+
+            return response()->json(['msg' => 'Marca '.$marca->nome.' deletada com sucesso'], 201);
+        }catch(\Throwable $th){
+            return response()->json(['error' => $th->getMessage()], 404);
+        }
     }
 }
